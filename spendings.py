@@ -148,11 +148,13 @@ categories_revenue = json.loads(config['DEFAULT']['categories_revenue'])
 categories_spending= json.loads(config['DEFAULT']['categories_spending'])
 categories_all = {**categories_revenue, **categories_spending}
 
+max_height = int(config['DEFAULT']['max_height'])
+grid_interval = int(config['DEFAULT']['grid_interval'])
+
 # Get the CSV file path from the command-line argument (specifies a config key)
 config_key = "DEFAULT"  # default file
 if len(sys.argv) >= 2:
   config_key = sys.argv[1]
-
 csv_file_paths = config[config_key]['csv_file_paths'].split(",")
 csv_file_paths = [c.strip("'").strip('"').strip('\n').strip(" ") for c in csv_file_paths]
 for csv_file_path in csv_file_paths:
@@ -197,11 +199,9 @@ for csv_file_path in csv_file_paths:
   ax.legend(handles=legendHandles, prop={'size': 6})
 
   # grid
-  max_y = 50000
-  grid_interval = 10000
-  ax.set_yticks(np.arange(0, max_y+grid_interval, grid_interval))
+  ax.set_yticks(np.arange(0, max_height+grid_interval, grid_interval))
   ax.grid(axis='y', linestyle='--')
-  ax.set(ylim=(0, max_y))
+  ax.set(ylim=(0, max_height))
   fig.canvas.manager.window.overrideredirect(1)  # remove window frame
 
   cursor = mplcursors.cursor(hover=mplcursors.HoverMode.Transient)
