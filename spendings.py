@@ -120,12 +120,17 @@ def cleanupData(df):
   return df
 
 def getSumAndDetailText(data_frame, cat):
-  le_sum = data_frame[data_frame['Category']==cat]['Amount'].abs().sum()
-  text=f"{cat}: {round(le_sum,2)}€\n---------------------------------------------\n"
+  sum_amount = data_frame[data_frame['Category']==cat]['Amount'].abs().sum()
+  text=f"{cat}: {round(sum_amount,2)}€\n---------------------------------------------\n"
+  sorted_list = []
   for r in categories_all[cat]["regex"]:
     if r in details.keys():
-      text += r + ": " + str(round(abs(sum(details[r])), 2)) + "€\n"   
-  return le_sum, text
+      amount = round(abs(sum(details[r])), 2)
+      sorted_list.append((amount, r + ": " + str(amount) + "€\n"))
+  sorted_list.sort(reverse=True)  # sort highest to lowest
+  for (_,curr_text) in sorted_list:
+     text += curr_text
+  return sum_amount, text
 
 def barPlot(title, labels, data, max_y, y_grid_interval, show_bar_labels, color):
   if plt.fignum_exists(title):  
@@ -155,8 +160,8 @@ def createCategoryPlot(category, data_frame_dict, color):
   for path in csv_file_paths:
     labels.append(os.path.basename(path).split('.')[0].split('_')[-1])
     data_frame = data_frame_dict[path]
-    le_sum = data_frame[data_frame['Category']==category]['Amount'].abs().sum()
-    values.append(round(le_sum))
+    sum_amount = data_frame[data_frame['Category']==category]['Amount'].abs().sum()
+    values.append(round(sum_amount))
   data = {category: values}
   max_y = max_height
   barPlot(category, labels, data, max_y, grid_interval/2, True, color)
@@ -234,15 +239,15 @@ for csv_file_path in csv_file_paths:
   x = ['Incomes '+ str(sum_revenues) + "€", 'Spendings '+ str(sum_spendings) + "€"]  
   offset = np.array([0.0, 0.0])
   for cat,data in categories_revenue.items():
-     le_sum, text = getSumAndDetailText(revenues, cat)
-     if le_sum != 0.0:
-        ax.bar(x, [le_sum, 0.0], bottom = offset, width=0.1, color=data["color"], label=text)
-        offset = np.add(offset, [le_sum, 0.0])
+     sum_amount, text = getSumAndDetailText(revenues, cat)
+     if sum_amount != 0.0:
+        ax.bar(x, [sum_amount, 0.0], bottom = offset, width=0.1, color=data["color"], label=text)
+        offset = np.add(offset, [sum_amount, 0.0])
   for cat,data in categories_spending.items():
-     le_sum, text = getSumAndDetailText(spendings, cat)
-     if le_sum != 0.0:
-        ax.bar(x, [0.0, le_sum], bottom = offset, width=0.1, color=data["color"], label=text)
-        offset = np.add(offset, [0.0, le_sum])    
+     sum_amount, text = getSumAndDetailText(spendings, cat)
+     if sum_amount != 0.0:
+        ax.bar(x, [0.0, sum_amount], bottom = offset, width=0.1, color=data["color"], label=text)
+        offset = np.add(offset, [0.0, sum_amount])    
 
   # legend
   legendHandles = []
